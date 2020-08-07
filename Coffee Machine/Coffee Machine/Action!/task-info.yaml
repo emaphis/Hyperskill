@@ -366,5 +366,9 @@ files:
     }
   learner_created: false
 feedback_link: https://hyperskill.org/projects/33/stages/178/implement
-status: Unchecked
+status: Solved
+feedback:
+  message: Congratulations! Continue on <a href="https://hyperskill.org/projects/33/stages/178/implement">JetBrains
+    Academy</a>
+  time: Fri, 07 Aug 2020 00:59:11 UTC
 record: -1
