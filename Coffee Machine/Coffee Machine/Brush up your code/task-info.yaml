@@ -284,4 +284,7 @@ files:
   learner_created: false
 feedback_link: https://hyperskill.org/projects/33/stages/180/implement
 status: Unchecked
+feedback:
+  message: Gradle project isn't imported
+  time: Sat, 08 Aug 2020 03:33:40 UTC
 record: -1
