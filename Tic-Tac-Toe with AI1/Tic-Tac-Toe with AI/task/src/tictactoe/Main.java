@@ -1,6 +1,7 @@
 package tictactoe;
 
 import java.util.Scanner;
+import java.util.Random;
 
 /**
  * (1, 3) (2, 3) (3, 3) col -> row
@@ -12,43 +13,49 @@ public class Main {
     private static final Scanner scan = new Scanner(System.in);
 
     public static void main(String[] args) {
-        char[] pieces = getPieceNames();
-        board = new Board(pieces);
+        board = new Board();
         board.outputBoard();
 
         gameLoop();
     }
 
     private static void gameLoop() {
+        Piece piece;
         boolean move = false;
-        Piece piece = board.switchPiece(Piece.NONE);
-        while (!move) {
-            System.out.print("Enter the coordinates: ");
-            String line = scan.nextLine();
-            move = nextMove(piece, line);
-        }
-        board.switchPiece(piece);
-        if (!isFinished()) {
-            System.out.println("Game not finished");
+        boolean finished = false;
+
+        // start game loop.
+        while (!finished) {
+
+            // 'X' plays.  (first)
+            piece = Piece.X;
+            while (!move) {  // loop until 'X' player enters a legal move.
+                System.out.print("Enter the coordinates: ");
+                String line = scan.nextLine();
+                move = legalXMove(piece, line);
+            }
+
+            board.outputBoard();
+            move = false;
+            finished = isFinished();
+
+            if (!finished) {
+                // 'O' plays
+                piece = Piece.O;
+                board.playEasy(piece);
+                board.outputBoard();
+                finished = isFinished();
+            }
         }
     }
-
+/*
     static char[] getPieceNames() {
         System.out.print("Enter cells: ");
         String line = scan.nextLine();
         return line.toCharArray();
     }
-/*
-    static void putPiece(char name, int col, int row) {
-        Piece piece = board.createPiece(name);
-        if (board.empty(col, row)) {
-            board.put(piece, col, row);
-        } else {
-            board.put(Piece.ERROR, col, row);
-        }
-    }
 */
-    static boolean nextMove(Piece piece, String line) {
+    static boolean legalXMove(Piece piece, String line) {
         if (!line.matches("\\d\\s\\d")) {
             System.out.println("You should enter numbers!");
             return false;
@@ -57,25 +64,24 @@ public class Main {
         String[] parts = line.split(" ");
 
         int col = Integer.parseInt(parts[0]);
-        if (col > 3 || col < 1) {
-            System.out.println("Coordinates should be from 1 to 3");
-            return false;
-        }
-
-        int row = Integer.parseInt(parts[1]);
-        if (row > 3 || row < 1) {
+        if (col > board.getLEN() || col < 1) {
             System.out.println("Coordinates should be from 1 to 3!");
             return false;
         }
 
-        if (board.empty(col, row)) {
-            board.put(piece, col, row);
-            board.outputBoard();
-            return true;
+        int row = Integer.parseInt(parts[1]);
+        if (row > board.getLEN() || row < 1) {
+            System.out.println("Coordinates should be from 1 to 3!");
+            return false;
         }
 
-        System.out.println("This cell is occupied! Choose another one!");
-        return false;
+        if (!board.empty(col, row)) {
+            System.out.println("This cell is occupied! Choose another one!");
+            return false;
+        } else  {
+            board.put(piece, col, row);
+            return true;
+        }
     }
 
     static boolean isFinished() {
@@ -97,7 +103,6 @@ public class Main {
             case NOTFINISHED:
             default:
                 return false;
-
         }
     }
 }
@@ -141,7 +146,14 @@ class Board {
      * }
      */
     private final Piece[][] board;
-    public static final int LEN = 3;
+    private static final int LEN = 3;
+    private static final Random rand = new Random();
+
+    private static final char[] clear = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '};
+
+    public Board() {
+        this(clear);
+    }
 
     public Board(final char[] pieces) {
         board = new Piece[LEN][LEN];
@@ -154,6 +166,10 @@ class Board {
                 count++;
             }
         }
+    }
+
+    public static int getLEN () {
+        return LEN;
     }
 
     //** Convert char to Piece */
@@ -182,23 +198,35 @@ class Board {
         return get(col, row) == Piece.NONE;
     }
 
-    public Piece switchPiece(Piece piece) {
-        int numX = countPiece(Piece.X);
-        int numO = countPiece(Piece.O);
-
-        if (numX + numO == 0) {
-            piece = Piece.X;
+    // Easy player.
+    public int countEmpty() {
+        int count = 0;
+        for (int row = LEN; row > 0; row--) {
+            for (int col = 1; col <= LEN; col++) {
+                if (empty(col, row)) {
+                    count++;
+                }
+            }
         }
+        return count;
+    }
 
-        if (numX > numO) {
-            return Piece.O;
-        } else if (numO > numX) {
-            return Piece.X;
-        } else {  // X == O
-            if (piece == Piece.X) {
-                return Piece.O;
-            } else {
-                return Piece.X;
+    public void playEasy(Piece piece) {
+        System.out.println("Making move level \"easy\"");
+        int numEmpty = countEmpty();
+        int indx = rand.nextInt(numEmpty);
+        int count = 0;
+
+        // find the empty square to play, then play
+        for (int row = LEN; row > 0; row--) {
+            for (int col = 1; col <= LEN; col++) {
+                if (empty(col, row)) {
+                    if (count == indx) {
+                        put(piece, col, row);
+                        return;
+                    }
+                    count++;
+                }
             }
         }
     }
