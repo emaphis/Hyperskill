@@ -13,49 +13,85 @@ public class Main {
     private static final Scanner scan = new Scanner(System.in);
 
     public static void main(String[] args) {
-        board = new Board();
-        board.outputBoard();
 
-        gameLoop();
+        while (true) {
+            System.out.print("Input command: ");
+            String line = scan.nextLine();
+            String[] parts = line.split(" ");
+
+            String command = parts[0];
+
+            if (command.equals("exit")) {
+                break;
+            } else if (command.equals("start") && parts.length == 3) {
+                Player player1 = getPlayer(parts[1]);
+                Player player2 = getPlayer(parts[2]);
+
+                if (player1 != Player.ERROR && player2 != Player.ERROR) {
+                    board = new Board();
+                    board.outputBoard();
+                    gameLoop(player1, player2);
+                } else  {
+                    System.out.println("Bad parameters!");
+                }
+            } else {
+                System.out.println("Bad parameters!");
+            }
+        }
     }
 
-    private static void gameLoop() {
-        Piece piece;
-        boolean move = false;
+    private static void gameLoop(Player player1, Player player2) {
         boolean finished = false;
 
         // start game loop.
         while (!finished) {
 
             // 'X' plays.  (first)
-            piece = Piece.X;
-            while (!move) {  // loop until 'X' player enters a legal move.
-                System.out.print("Enter the coordinates: ");
-                String line = scan.nextLine();
-                move = legalXMove(piece, line);
-            }
-
-            board.outputBoard();
-            move = false;
-            finished = isFinished();
+            finished = makeMove(Piece.X, player1);
 
             if (!finished) {
                 // 'O' plays
-                piece = Piece.O;
-                board.playEasy(piece);
-                board.outputBoard();
-                finished = isFinished();
+                finished = makeMove(Piece.O, player2);
             }
         }
     }
-/*
-    static char[] getPieceNames() {
-        System.out.print("Enter cells: ");
-        String line = scan.nextLine();
-        return line.toCharArray();
+
+    static Player getPlayer(String player) {
+        if (player.equals("easy")) {
+            return Player.EASY;
+        } else if (player.equals("user")) {
+            return Player.USER;
+        } else {
+            return Player.ERROR;
+        }
     }
-*/
-    static boolean legalXMove(Piece piece, String line) {
+
+    static boolean makeMove(Piece piece, Player player) {
+        boolean finished = false;
+        switch (player) {
+            case USER:
+                playUser(piece);
+                break;
+            case EASY:
+                board.playEasy(piece);
+                break;
+        }
+        board.outputBoard();
+        finished = isFinished();
+        return finished;
+    }
+
+    static void playUser(Piece piece) {
+        boolean move = false;
+
+        while (!move) {  // loop until user enters a legal move.
+            System.out.print("Enter the coordinates: ");
+            String line = scan.nextLine();
+            move = legalUserMove(piece, line);
+        }
+    }
+
+    static boolean legalUserMove(Piece piece, String line) {
         if (!line.matches("\\d\\s\\d")) {
             System.out.println("You should enter numbers!");
             return false;
@@ -105,6 +141,11 @@ public class Main {
                 return false;
         }
     }
+}
+
+// Player types
+enum Player {
+    USER, EASY, ERROR
 }
 
 // Game states
