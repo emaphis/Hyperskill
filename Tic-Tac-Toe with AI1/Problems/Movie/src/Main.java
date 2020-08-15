@@ -4,13 +4,13 @@ class Movie {
     private int year;
 
     // write two constructors here
-    Movie (String title, String desc, int year) {
+    Movie(String title, String desc, int year) {
         this.title = title;
         this.desc = desc;
         this.year = year;
     }
 
-    Movie (String title, int year) {
+    Movie(String title, int year) {
         this(title, "empty", year);
     }
 
