@@ -26,13 +26,13 @@ public class Main {
             if (command.equals("exit")) {
                 break;
             } else if (command.equals("start") && parts.length == 3) {
-                PlayerType player1 = getPlayer(parts[1]);
-                PlayerType player2 = getPlayer(parts[2]);
+                board = new Board();
+                Player playerX = getPlayer(board, Piece.X, parts[1]);
+                Player player2 = getPlayer(board, Piece.O, parts[2]);
 
-                if (player1 != PlayerType.ERROR && player2 != PlayerType.ERROR) {
-                    board = new Board();
+                if (playerX != null && player2 != null) {
                     board.outputBoard();
-                    gameLoop(player1, player2);
+                    gameLoop(playerX, player2);
                 } else  {
                     System.out.println("Bad parameters!");
                 }
@@ -42,91 +42,40 @@ public class Main {
         }
     }
 
-    private static void gameLoop(PlayerType player1, PlayerType player2) {
+    private static void gameLoop(Player playerX, Player playerO) {
         boolean finished = false;
 
         // start game loop.
         while (!finished) {
 
             // 'X' plays.  (first)
-            finished = makeMove(Piece.X, player1);
+            finished = makeMove(playerX);
 
             if (!finished) {
                 // 'O' plays
-                finished = makeMove(Piece.O, player2);
+                finished = makeMove(playerO);
             }
         }
     }
 
-    static PlayerType getPlayer(String player) {
+    /** Create player given a string */
+    static Player getPlayer(Board board, Piece piece, String player) {
         switch (player) {
             case "easy":
-                return PlayerType.EASY;
+                return new EasyPlayer(board, piece);
             case "medium":
-                return PlayerType.MEDIUM;
+                return new MediumPlayer(board, piece);
             case "user":
-                return PlayerType.USER;
+                return new UserPlayer(board, piece, scan);
             default:
-                return PlayerType.ERROR;  // Opps.
+                return null;  // Opps.
         }
     }
 
-    static boolean makeMove(Piece piece, PlayerType player) {
-        switch (player) {
-            case USER:
-                playUser(piece);
-                break;
-            case EASY:
-                board.playEasy(piece);
-                break;
-            case MEDIUM:
-                board.playMedium(piece);
-                break;
-            case ERROR:
-            default:
-                break;
-        }
+    static boolean makeMove(Player player) {
+        player.play();
         board.outputBoard();
         return isFinished();
-    }
-
-    static void playUser(Piece piece) {
-        boolean move = false;
-
-        while (!move) {  // loop until user enters a legal move.
-            System.out.print("Enter the coordinates: ");
-            String line = scan.nextLine();
-            move = legalUserMove(piece, line);
-        }
-    }
-
-    static boolean legalUserMove(Piece piece, String line) {
-        if (!line.matches("\\d\\s\\d")) {
-            System.out.println("You should enter numbers!");
-            return false;
-        }
-
-        String[] parts = line.split(" ");
-
-        int col = Integer.parseInt(parts[0]);
-        if (col > LEN || col < 1) {
-            System.out.println("Coordinates should be from 1 to 3!");
-            return false;
-        }
-
-        int row = Integer.parseInt(parts[1]);
-        if (row > LEN || row < 1) {
-            System.out.println("Coordinates should be from 1 to 3!");
-            return false;
-        }
-
-        if (!board.isEmpty(col, row)) {
-            System.out.println("This cell is occupied! Choose another one!");
-            return false;
-        } else  {
-            board.put(new Cell(piece), col, row);
-            return true;
-        }
     }
 
     /** interpret board state */
@@ -151,11 +100,6 @@ public class Main {
                 return false;
         }
     }
-}
-
-// Player types
-enum PlayerType {
-    USER, EASY, MEDIUM,  ERROR
 }
 
 // Game states
@@ -199,9 +143,6 @@ class Board {
      */
     private final Cell[][] board;
     public static final int LEN = 3;
-    private static final Random rand = new Random();
-
-    //private static final char[] clear = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '};
 
     public Board() {
         this.board = new Cell[LEN][LEN];
@@ -209,34 +150,6 @@ class Board {
             for (int col = 1; col <= LEN; col++) {
                 put(new Cell(Piece.NONE), col, row);
             }
-        }
-    }
-
-    public Board(final char[] pieces) {
-        board = new Cell[LEN][LEN];
-        int count = 0;
-        for (int row = LEN; row > 0; row--) {
-            for (int col = 1; col <= LEN; col++) {
-                char pieceName = pieces[count];
-                Piece piece = createPiece(pieceName);
-                put(new Cell(piece), col, row);
-                count++;
-            }
-        }
-    }
-
-
-    //** Convert char to Piece */
-    public final Piece createPiece(char name) {
-        switch (name) {
-            case 'X':
-                return Piece.X;
-            case 'O':
-                return Piece.O;
-            case '_':
-            case ' ':
-            default:
-                return Piece.NONE;
         }
     }
 
@@ -264,86 +177,6 @@ class Board {
         }
         return count;
     }
-
-    public void playEasy(Piece piece) {
-        System.out.println("Making move level \"easy\"");
-        int numEmpty = countEmpty();
-        int indx = rand.nextInt(numEmpty);
-        int count = 0;
-
-        // find the empty square to play, then play
-        for (int row = LEN; row > 0; row--) {
-            for (int col = 1; col <= LEN; col++) {
-                if (isEmpty(col, row)) {
-                    if (count == indx) {
-                        put(new Cell(piece), col, row);
-                        return;
-                    }
-                    count++;
-                }
-            }
-        }
-    }
-
-    /// Medium player
-
-    private void placeOnEmpty(Piece piece, int col1, int row1, int col2, int row2, int col3, int row3) {
-        if (get(col1, row1).isEmpty()) {
-            put(new Cell(piece), col1, row1);
-            return;
-        }
-        if (get(col2, row2).isEmpty()) {
-            put(new Cell(piece), col2, row2);
-            return;
-        }
-        if (get(col3, row3).isEmpty()) {
-            put(new Cell(piece), col3, row3);
-        }
-    }
-
-    public void playMedium(Piece piece) {
-        // rows
-        if (countLine(piece, get(1, 3), get(2, 3), get(3, 3)) == 2) {
-            placeOnEmpty(piece, 1, 3, 2, 3, 3, 3);
-            return;
-        }
-        if (countLine(piece, get(1, 2), get(2, 2), get(3, 2)) == 2) {
-            placeOnEmpty(piece, 1, 2, 2, 2, 3, 2);
-            return;
-        }
-        if (countLine(piece, get(1, 1), get(2, 1), get(3, 1)) == 2) {
-            placeOnEmpty(piece, 1, 1, 2, 1, 3, 1);
-            return;
-        }
-
-        // columns
-        if (countLine(piece, get(1, 3), get(1, 2), get(1, 1)) == 2) {
-            placeOnEmpty(piece, 1, 3, 1, 2, 1, 1);
-            return;
-        }
-        if (countLine(piece, get(2, 3), get(2, 2), get(2, 1)) == 2) {
-            placeOnEmpty(piece, 2, 3, 2, 2, 2, 1);
-            return;
-        }
-        if (countLine(piece, get(3, 3), get(3, 2), get(3, 1)) == 2) {
-            placeOnEmpty(piece, 3, 3, 3, 2, 3, 1);
-            return;
-        }
-
-        // diagonals
-        if (countLine(piece, get(1, 3), get(2, 2), get(3, 1)) == 2) {
-            placeOnEmpty(piece, 1, 3, 2, 2, 3, 1);
-            return;
-        }
-        if (countLine(piece, get(1, 1), get(2, 2), get(3, 3)) == 2) {
-            placeOnEmpty(piece, 1, 1, 2, 2, 3, 3);
-            return;
-        }
-
-        // no combos available so play random
-        playEasy(piece);
-    }
-
 
     public void outputBoard() {
         System.out.println("---------");
@@ -432,6 +265,7 @@ class Board {
     }
 }
 
+
 class Cell {
     private final Piece piece;
     private int score;
@@ -460,4 +294,164 @@ class Cell {
     public int getScore() {
         return score;
     }
+}
+
+
+/** Base class for Player types */
+abstract class Player {
+
+    protected Piece piece;
+    protected Board board;
+
+    public Player(Board board, Piece piece) {
+        this.board = board;
+        this.piece = piece;
+    }
+
+    public abstract void play();
+}
+
+class UserPlayer extends Player {
+    Scanner scan;
+
+    public UserPlayer(Board board, Piece piece, Scanner scan) {
+        super(board, piece);
+        this.scan = scan;
+    }
+
+    @Override
+    public void play() {
+
+        boolean move = false;
+
+        while (!move) {
+            System.out.println("Enter the coordinates: ");
+            String line = scan.nextLine();
+            move = legaUserMove(line);
+        }
+    }
+
+
+    private boolean legaUserMove(String line) {
+        if (!line.matches("\\d\\s\\d")) {
+            System.out.println("You should enter numbers!");
+            return false;
+        }
+
+        String[] parts = line.split(" ");
+
+        int col = Integer.parseInt(parts[0]);
+        if (col > LEN || col < 1) {
+            System.out.println("Coordinates should be from 1 to 3!");
+            return false;
+        }
+
+        int row = Integer.parseInt(parts[1]);
+        if (row > LEN || row < 1) {
+            System.out.println("Coordinates should be from 1 to 3!");
+            return false;
+        }
+
+        if (!board.isEmpty(col, row)) {
+            System.out.println("This cell is occupied! Choose another one!");
+            return false;
+        } else {
+            board.put(new Cell(piece), col, row);
+            return true;
+        }
+    }
+}
+
+class EasyPlayer extends Player {
+    Random rand;
+
+    public EasyPlayer(Board board, Piece piece) {
+        super(board, piece);
+        rand = new Random();
+    }
+
+    @Override
+    public void play() {
+        int numEmpty = board.countEmpty();
+        int indx = rand.nextInt(numEmpty);
+        int count = 0;
+
+        // find the empty square to play, then play
+        for (int row = LEN; row > 0; row--) {
+            for (int col = 1; col <= LEN; col++) {
+                if (board.isEmpty(col, row)) {
+                    if (count == indx) {
+                        board.put(new Cell(piece), col, row);
+                        return;
+                    }
+                    count++;
+                }
+            }
+        }
+    }
+}
+
+class MediumPlayer extends EasyPlayer {
+
+    public MediumPlayer(Board board, Piece piece) {
+        super(board, piece);
+    }
+
+    @Override
+    public void play() {
+        // rows
+        if (board.countLine(piece, board.get(1, 3), board.get(2, 3), board.get(3, 3)) == 2) {
+            placeOnEmpty(1, 3,  2, 3,  3, 3);
+            return;
+        }
+        if (board.countLine(piece, board.get(1, 2), board.get(2, 2), board.get(3, 2)) == 2) {
+            placeOnEmpty(1, 2,  2, 2,  3, 2);
+            return;
+        }
+        if (board.countLine(piece, board.get(1, 1), board.get(2, 1), board.get(3, 1)) == 2) {
+            placeOnEmpty(1, 1,  2, 1,  3, 1);
+            return;
+        }
+
+        // columns
+        if (board.countLine(piece, board.get(1, 3), board.get(1, 2), board.get(1, 1)) == 2) {
+            placeOnEmpty(1, 3,  1, 2,  1, 1);
+            return;
+        }
+        if (board.countLine(piece, board.get(2, 3), board.get(2, 2), board.get(2, 1)) == 2) {
+            placeOnEmpty(2, 3,  2, 2,  2, 1);
+            return;
+        }
+        if (board.countLine(piece, board.get(3, 3), board.get(3, 2), board.get(3, 1)) == 2) {
+            placeOnEmpty(3, 3,  3, 2,  3, 1);
+            return;
+        }
+
+        // diagonals
+        if (board.countLine(piece, board.get(1, 3), board.get(2, 2), board.get(3, 1)) == 2) {
+            placeOnEmpty(1, 3,  2, 2,  3, 1);
+            return;
+        }
+        if (board.countLine(piece, board.get(1, 1), board.get(2, 2), board.get(3, 3)) == 2) {
+            placeOnEmpty(1, 1,  2, 2,  3, 3);
+            return;
+        }
+
+        super.play(); // Play random cell - easy mode.
+    }
+
+    private void placeOnEmpty(int col1, int row1, int col2, int row2, int col3, int row3) {
+        if (board.get(col1, row1).isEmpty()) {
+            board.put(new Cell(piece), col1, row1);
+            return;
+        }
+        if (board.get(col2, row2).isEmpty()) {
+            board.put(new Cell(piece), col2, row2);
+            return;
+        }
+        if (board.get(col3, row3).isEmpty()) {
+            board.put(new Cell(piece), col3, row3);
+        }
+    }
+
 }

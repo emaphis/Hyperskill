@@ -28,23 +28,7 @@ class TicTacToeField {
     final FieldState[][] field;
 
     TicTacToeField(FieldState[][] field) {
-        this.field = new FieldState[3][3];
-        for (int row = 0; row < 3; row++) {
-            for (int col = 0; col < 3; col++) {
-                this.field[row][col] = field[row][col];
-            }
-        }
-    }
-
-    TicTacToeField(String str) {
-        field = new FieldState[3][3];
-
-        for (int row = 0; row < 3; row++) {
-            for (int col = 0; col < 3; col++) {
-                field[row][col] =
-                    FieldState.get(str.charAt(((2 - row) * 3 + col)));
-            }
-        }
+        this.field = field;
     }
 
     boolean equalTo(TicTacToeField other) {
@@ -136,6 +120,7 @@ class TicTacToeField {
             return null;
         }
     }
+
 
     static List<TicTacToeField> parseAll(String output) {
         List<TicTacToeField> fields = new ArrayList<>();
@@ -233,13 +218,11 @@ public class TicTacToeTest extends StageTest<Clue> {
 
             String initial;
 
-            switch (i % 6) {
+            switch (i % 4) {
                 case 0: initial = "start user easy\n"; break;
                 case 1: initial = "start easy user\n"; break;
                 case 2: initial = "start user medium\n"; break;
                 case 3: initial = "start medium user\n"; break;
-                case 4: initial = "start user hard\n"; break;
-                case 5: initial = "start hard user\n"; break;
                 default: continue;
             }
 
@@ -258,27 +241,10 @@ public class TicTacToeTest extends StageTest<Clue> {
             .setInput("start medium medium\nexit"));
 
         tests.add(new TestCase<Clue>()
-            .setInput("start hard hard\nexit"));
-
-
-        tests.add(new TestCase<Clue>()
             .setInput("start medium easy\nexit"));
 
         tests.add(new TestCase<Clue>()
             .setInput("start easy medium\nexit"));
-
-        tests.add(new TestCase<Clue>()
-            .setInput("start medium hard\nexit"));
-
-        tests.add(new TestCase<Clue>()
-            .setInput("start hard medium\nexit"));
-
-        tests.add(new TestCase<Clue>()
-            .setInput("start easy hard\nexit"));
-
-        tests.add(new TestCase<Clue>()
-            .setInput("start hard easy\nexit"));
-
 
         tests.add(new TestCase<Clue>()
             .setInput("start user user\n" +
