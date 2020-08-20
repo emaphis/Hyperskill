@@ -400,58 +400,39 @@ class MediumPlayer extends EasyPlayer {
     @Override
     public void play() {
         // rows
-        if (board.countLine(piece, board.get(1, 3), board.get(2, 3), board.get(3, 3)) == 2) {
-            placeOnEmpty(1, 3,  2, 3,  3, 3);
-            return;
-        }
-        if (board.countLine(piece, board.get(1, 2), board.get(2, 2), board.get(3, 2)) == 2) {
-            placeOnEmpty(1, 2,  2, 2,  3, 2);
-            return;
-        }
-        if (board.countLine(piece, board.get(1, 1), board.get(2, 1), board.get(3, 1)) == 2) {
-            placeOnEmpty(1, 1,  2, 1,  3, 1);
-            return;
-        }
+        if (checkTwo(piece, 1, 3,  2, 3,  3, 3)) { return; }
+        if (checkTwo(piece, 1, 2,  2, 2,  3, 2)) { return; }
+        if (checkTwo(piece, 1, 1,  2, 1,  3, 1)) { return; }
 
         // columns
-        if (board.countLine(piece, board.get(1, 3), board.get(1, 2), board.get(1, 1)) == 2) {
-            placeOnEmpty(1, 3,  1, 2,  1, 1);
-            return;
-        }
-        if (board.countLine(piece, board.get(2, 3), board.get(2, 2), board.get(2, 1)) == 2) {
-            placeOnEmpty(2, 3,  2, 2,  2, 1);
-            return;
-        }
-        if (board.countLine(piece, board.get(3, 3), board.get(3, 2), board.get(3, 1)) == 2) {
-            placeOnEmpty(3, 3,  3, 2,  3, 1);
-            return;
-        }
+        if (checkTwo(piece, 1, 3,  1, 2,  1, 1)) { return; }
+        if (checkTwo(piece, 2, 3,  2, 2,  2, 1)) { return; }
+        if (checkTwo(piece, 3, 3,  3, 2,  3, 1)) { return; }
 
         // diagonals
-        if (board.countLine(piece, board.get(1, 3), board.get(2, 2), board.get(3, 1)) == 2) {
-            placeOnEmpty(1, 3,  2, 2,  3, 1);
-            return;
-        }
-        if (board.countLine(piece, board.get(1, 1), board.get(2, 2), board.get(3, 3)) == 2) {
-            placeOnEmpty(1, 1,  2, 2,  3, 3);
-            return;
-        }
+        if (checkTwo(piece, 1, 3,  2, 2,  3, 1)) { return; }
+        if (checkTwo(piece, 1, 1,  2, 2,  3, 3)) { return; }
 
         super.play(); // Play random cell - easy mode.
     }
 
-    private void placeOnEmpty(int col1, int row1, int col2, int row2, int col3, int row3) {
-        if (board.get(col1, row1).isEmpty()) {
-            board.put(new Cell(piece), col1, row1);
-            return;
-        }
-        if (board.get(col2, row2).isEmpty()) {
-            board.put(new Cell(piece), col2, row2);
-            return;
-        }
-        if (board.get(col3, row3).isEmpty()) {
+    private boolean checkTwo(Piece piece, int col1, int row1, int col2, int row2, int col3, int row3) {
+        if (board.get(col1, row1).isPiece(piece) && board.get(col2, row2).isPiece(piece) &&  board.get(col3, row3).isEmpty() ) {
             board.put(new Cell(piece), col3, row3);
+            return true;
         }
+
+        if (board.get(col1, row1).isPiece(piece) && board.get(col2, row2).isEmpty() &&  board.get(col3, row3).isPiece(piece)) {
+            board.put(new Cell(piece), col2, row2);
+            return true;
+        }
+
+        if (board.get(col1, row1).isEmpty() && board.get(col2, row2).isPiece(piece) &&  board.get(col3, row3).isPiece(piece)) {
+            board.put(new Cell(piece), col1, row1);
+            return true;
+        }
+
+        return false;
     }
 
 }
