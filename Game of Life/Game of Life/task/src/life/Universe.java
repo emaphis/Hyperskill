@@ -2,11 +2,11 @@ package life;
 
 import java.util.Random;
 
-public class Board {
+public class Universe {
     private final int SIZE;
     private Cell[][] carray;
 
-    Board(int size) {
+    Universe(int size) {
         this.SIZE = size;
         this.carray = new Cell[size][size];
         for (int row = 0; row < size; row++) {
@@ -23,6 +23,8 @@ public class Board {
     public Cell getCell(int row, int col) {
         return carray[row][col];
     }
+
+    public void setCell(int row, int col, Cell cell) { carray[row][col] = cell; }
 
     public int countNeighbors(int row, int col) {
         int count = 0;
@@ -124,6 +126,16 @@ public class Board {
                 cell.setAlive(rand.nextBoolean());
             }
         }
+    }
+
+    public int numAlive() {
+        int count = 0;
+        for (Cell[] cells : carray) {
+            for (Cell cell : cells) {
+                if (cell.isAlive()) { count++; }
+            }
+        }
+        return count;
     }
 
     public void displayBoard() {
