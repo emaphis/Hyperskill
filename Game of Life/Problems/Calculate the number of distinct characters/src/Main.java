@@ -6,7 +6,7 @@ public class Main {
     private static final long mainThreadId = Thread.currentThread().getId();
 
     // Fix this method
-    public static void main(String[] args) throws InterruptedException, RuntimeException {
+    public static void main(String[] args) throws InterruptedException {
 
         Scanner scanner = new Scanner(System.in);
         String str = scanner.nextLine();

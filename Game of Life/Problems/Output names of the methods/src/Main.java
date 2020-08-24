@@ -22,7 +22,9 @@ class CreateInstance {
 
 abstract class SuperClass {
 
-    public static void method1() { }
+    public static void method1() { 
+        System.out.print("");
+    }
 
     public abstract void method2();
 
