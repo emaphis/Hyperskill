@@ -12,9 +12,12 @@ public class Main {
         int generations = 10;
 
         Universe universe = new Universe(size);
-        Controler controler = new Controler(universe, seed);
-        controler.run(generations);
-        controler.display();
+        universe.generateRandom(seed);
+        GameOfLife game = new GameOfLife(universe);
+        //Controler controler = new Controler(universe, seed);
+       // controler.run(generations);
+        game.run(generations);
+        //controler.display();
     }
 }
 
