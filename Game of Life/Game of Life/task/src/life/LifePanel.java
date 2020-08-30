@@ -7,11 +7,14 @@ public class LifePanel extends JPanel {
     private Universe universe;
 
     LifePanel(Universe universe) {
+        super();
+        System.out.println("got here cccc");
         this.universe = universe;
     }
 
     @Override
     protected void paintComponent(Graphics gr) {
+        super.paintComponent(gr);
         int size = universe.getSize();
 
         gr.setColor(Color.GRAY);

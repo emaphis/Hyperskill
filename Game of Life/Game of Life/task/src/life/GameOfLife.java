@@ -8,7 +8,7 @@ public class GameOfLife extends JFrame {
     private final JLabel aliveLabel;
     private int generation;
     private JPanel lifePanel;
-    private Universe universe;
+    private final Universe universe;
 
 
     public GameOfLife(Universe universe) {
@@ -34,6 +34,7 @@ public class GameOfLife extends JFrame {
         labelPanel.add(aliveLabel);
         labelPanel.setLayout(new BoxLayout(labelPanel, BoxLayout.Y_AXIS));
 
+        System.out.println("got here bbbbbb");
         lifePanel = new LifePanel(universe);
 
         add(labelPanel);
@@ -55,7 +56,14 @@ public class GameOfLife extends JFrame {
         for (int generation = 1; generation <= generations; generation++) {
             generationLabel.setText("Generation #" + generation);
             aliveLabel.setText("Alive: " + universe.numAlive());
-            lifePanel.
+
+            if (lifePanel == null) {
+                System.out.println("Null error ddd");
+            } else {
+                System.out.println("lifePanel exists fffff");
+            }
+
+            //lifePanel.repaint();
             this.universe.advanceBoard();
 
             try {
